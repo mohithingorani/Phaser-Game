@@ -18,7 +18,6 @@ function preload() {
     fill: "#ffffff",
   });
 
-  this.load.image("logo", "assets/plane.png");
   this.load.audio("jump", "assets/jump.mp3");
   this.load.on("progress",(value)=>{
     loadingText.setText(`Loading....${Math.round(value*100)}%`)
@@ -26,10 +25,19 @@ function preload() {
   this.load.on("complete",()=>{
     loadingText.setText("Load Complete")
   })
+  this.load.image("logo", "assets/plane.png");
+  this.load.image("player","assets/mario.png")
+
 }
 
 function create() {
-  this.add.image(Math.random() * 800, Math.random() * 600, "logo");
+  this.add.image(Math.random() * 800, Math.random() * 600, "logo").setScale(0.5);
+
+  this.add.image(400,300,"player").setScale(0.1)
+
+  this.input.on("pointerdown",()=>{
+    this.sound.play("jump");
+  })
 }
 
 function update() {

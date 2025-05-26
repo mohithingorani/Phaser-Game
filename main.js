@@ -5,7 +5,10 @@ const config = {
   backgroundColor: "#1d212d",
   physics: {
     default: "arcade",
-    arcade: { gravity: { y: 0 }, debug: false },
+    arcade: {
+      gravity: { y: 500 },
+      debug: false,
+    },
   },
   scene: {
     preload,
@@ -15,20 +18,42 @@ const config = {
 };
 
 const game = new Phaser.Game(config);
-let player;
-let cursors;
+
+let player, cursors;
+let platforms;
 
 function preload() {
   this.load.spritesheet("dude", "assets/dude.png", {
     frameWidth: 32,
     frameHeight: 48,
   });
+
+  // Optional: load a ground image (or use a colored rectangle)
+  this.load.image("ground", "assets/ground.png");
 }
 
 function create() {
-  player = this.physics.add.sprite(400, 300, "dude");
+  // Create platforms group as static physics group
+  platforms = this.physics.add.staticGroup();
 
-  // Animations
+  // Create a ground platform at bottom
+  platforms.create(400, 580, "ground").setScale(2).refreshBody();
+  // Ground platform (at bottom)
+  platforms.create(400, 580, 'ground').setScale(2).refreshBody();
+
+  // Floating platforms
+  platforms.create(600, 450, 'ground');
+  platforms.create(50, 350, 'ground');
+  platforms.create(750, 220, 'ground');
+  // Create player sprite
+  player = this.physics.add.sprite(400, 450, "dude");
+
+  player.setCollideWorldBounds(true);
+
+  // Enable collision between player and platforms
+  this.physics.add.collider(player, platforms);
+
+  // Create animations (same as before)
   this.anims.create({
     key: "left",
     frames: this.anims.generateFrameNumbers("dude", { start: 0, end: 3 }),
@@ -49,8 +74,13 @@ function create() {
     repeat: -1,
   });
 
-  // Keyboard input
   cursors = this.input.keyboard.createCursorKeys();
+
+  this.input.on("pointerdown", () => {
+    if (player.body.touching.down) {
+      player.setVelocityY(-350);
+    }
+  });
 }
 
 function update() {
@@ -65,11 +95,7 @@ function update() {
     player.anims.play("turn");
   }
 
-  if (cursors.up.isDown) {
-    player.setVelocityY(-160);
-  } else if (cursors.down.isDown) {
-    player.setVelocityY(160);
-  } else {
-    player.setVelocityY(0);
+  if (cursors.up.isDown && player.body.touching.down) {
+    player.setVelocityY(-350);
   }
 }

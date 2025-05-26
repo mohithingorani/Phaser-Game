@@ -3,44 +3,73 @@ const config = {
   width: 800,
   height: 600,
   backgroundColor: "#1d212d",
+  physics: {
+    default: "arcade",
+    arcade: { gravity: { y: 0 }, debug: false },
+  },
   scene: {
-    preload: preload,
-    create: create,
-    update: update,
+    preload,
+    create,
+    update,
   },
 };
 
 const game = new Phaser.Game(config);
+let player;
+let cursors;
 
 function preload() {
-  const loadingText = this.add.text(300, 250, "Loading...", {
-    fontSize: "20px",
-    fill: "#ffffff",
+  this.load.spritesheet("dude", "assets/dude.png", {
+    frameWidth: 32,
+    frameHeight: 48,
   });
-
-  this.load.audio("jump", "assets/jump.mp3");
-  this.load.on("progress",(value)=>{
-    loadingText.setText(`Loading....${Math.round(value*100)}%`)
-  })
-  this.load.on("complete",()=>{
-    loadingText.setText("Load Complete")
-  })
-  this.load.image("logo", "assets/plane.png");
-  this.load.image("player","assets/mario.png")
-
 }
 
 function create() {
-  this.add.image(Math.random() * 800, Math.random() * 600, "logo").setScale(0.5);
+  player = this.physics.add.sprite(400, 300, "dude");
 
-  this.add.image(400,300,"player").setScale(0.1)
+  // Animations
+  this.anims.create({
+    key: "left",
+    frames: this.anims.generateFrameNumbers("dude", { start: 0, end: 3 }),
+    frameRate: 10,
+    repeat: -1,
+  });
 
-  this.input.on("pointerdown",()=>{
-    this.sound.play("jump");
-  })
+  this.anims.create({
+    key: "turn",
+    frames: [{ key: "dude", frame: 4 }],
+    frameRate: 20,
+  });
+
+  this.anims.create({
+    key: "right",
+    frames: this.anims.generateFrameNumbers("dude", { start: 5, end: 8 }),
+    frameRate: 10,
+    repeat: -1,
+  });
+
+  // Keyboard input
+  cursors = this.input.keyboard.createCursorKeys();
 }
 
 function update() {
-  // Called every frame
-  console.log("game is updating");
+  if (cursors.left.isDown) {
+    player.setVelocityX(-160);
+    player.anims.play("left", true);
+  } else if (cursors.right.isDown) {
+    player.setVelocityX(160);
+    player.anims.play("right", true);
+  } else {
+    player.setVelocityX(0);
+    player.anims.play("turn");
+  }
+
+  if (cursors.up.isDown) {
+    player.setVelocityY(-160);
+  } else if (cursors.down.isDown) {
+    player.setVelocityY(160);
+  } else {
+    player.setVelocityY(0);
+  }
 }
